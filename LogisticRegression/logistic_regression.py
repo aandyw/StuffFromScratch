@@ -11,27 +11,16 @@ class LogisticRegression:
         self.b = None  # bias
         self.losses = []
 
-    def sigmoid(self, x):
+    def sigmoid(self, z):
         # sigmoid activation function
-        return 1 / (1 + np.exp(-x))
+        return 1 / (1 + np.exp(-z))
 
-    def compute_loss(self, y, y_pred):
+    def compute_loss(self, y, y_pred, epsilon=1e-9):
         # binary cross-entropy loss (BCE)
-        return -np.mean(y * np.log(y_pred) + (1 - y) * np.log(1 - y_pred))
-
-    def compute_gradients(self, X, y, y_pred):
-        N = X.shape[0]
-        diff = y_pred - y
-        grad_W = (1 / N) * np.matmul(diff, X)
-        grad_b = (1 / N) * diff
-        return grad_W, grad_b
-
-    def update_model_weights(self, grad_W, grad_b):
-        self.W -= self.learning_rate * grad_W
-        self.b -= self.learning_rate * grad_b
+        return -np.mean(y * np.log(y_pred + epsilon) + (1 - y) * np.log(1 - y_pred + epsilon))
 
     def fit(self, X, y):
-        n, features = X.shape
+        N, features = X.shape
         self.W = np.random.randn(features)
         self.b = 0
 
@@ -39,12 +28,19 @@ class LogisticRegression:
             z = np.matmul(X, self.W) + self.b
             y_pred = self.sigmoid(z)
             loss = self.compute_loss(y, y_pred)
-            grad_W, grad_b = self.compute_gradients(X, y, y_pred)
-            self.update_model_weights(grad_W, grad_b)
+
+            ### compute gradients ###
+            residuals = y_pred - y
+            grad_W = (1 / N) * np.matmul(X.T, residuals)
+            grad_b = (1 / N) * np.sum(residuals)
+
+            ### parameter updates ###
+            self.W -= self.learning_rate * grad_W
+            self.b -= self.learning_rate * grad_b
             self.losses.append(loss)
 
     def predict(self, X):
         z = np.matmul(X, self.W) + self.b
         y_pred = self.sigmoid(z)
-        y_pred = y_pred[y_pred >= self.threshold]
+        y_pred = np.where(y_pred >= self.threshold, 1, 0)
         return y_pred
