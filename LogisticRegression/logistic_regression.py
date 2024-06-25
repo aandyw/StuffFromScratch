@@ -26,8 +26,8 @@ class LogisticRegression:
 
     def fit(self, X, y):
         N, features = X.shape
-        self.W = np.random.randn(features)  #
-        self.b = 0  # zero bias has no effect
+        self.W = np.random.randn(features)
+        self.b = 0
 
         for epoch in range(self.epochs):
             z = np.matmul(X, self.W) + self.b
