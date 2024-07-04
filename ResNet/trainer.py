@@ -22,7 +22,6 @@ class Trainer:
         device: str = "cpu",
     ) -> None:
         self.model = model
-        self.model.to(self.device)
 
         # training configurations
         self.batch_size = batch_size
@@ -30,10 +29,11 @@ class Trainer:
         self.num_epochs = num_epochs
         self.check_val_every_n_epoch = check_val_every_n_epoch
         self.device = device
+        self.model.to(self.device)
 
         # set loss function and optimizer
         self.criterion = nn.CrossEntropyLoss()
-        self.optimizer = optim.Adam(self.model.parameters, lr=self.learning_rate)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
 
         # model metrics
         self.train_losses = []
