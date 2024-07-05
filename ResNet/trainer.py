@@ -1,11 +1,9 @@
-import os
+import sys, os
 import matplotlib.pyplot as plt
-import numpy as np
 from tqdm import tqdm
-from datetime import datetime
+import logging
 
 import torch
-import torchvision
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -14,17 +12,21 @@ from torch.utils.data import DataLoader
 class Trainer:
     def __init__(
         self,
-        model,
-        batch_size: int = 64,
+        model: nn.Module,
+        model_name: str = "resnet18",
+        batch_size: int = 128,
         learning_rate: float = 1e-3,
         num_epochs: int = 10,
         check_val_every_n_epoch: int = 1,
         device: str = "cpu",
     ) -> None:
+        """Trainer object to facilitate training and evaluation"""
+
         self.model = model
+        self.model_name = model_name
 
         # training configurations
-        self.batch_size = batch_size
+        self.batch_size = batch_size  # does nothing; mainly for viz
         self.learning_rate = learning_rate
         self.num_epochs = num_epochs
         self.check_val_every_n_epoch = check_val_every_n_epoch
@@ -42,9 +44,11 @@ class Trainer:
         self.val_accuracies = []
 
         # logging info
-        self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        logging.basicConfig(stream=sys.stdout, level=logging.INFO, format="%(levelname)s | %(message)s")
+        self.logger = logging.getLogger()
 
     def train(self, train_dataloader: DataLoader, val_dataloader: DataLoader) -> None:
+        """Train the ResNet-18 Model"""
 
         for epoch in range(self.num_epochs):
             self.model.train()  # set model to train
@@ -68,7 +72,7 @@ class Trainer:
                 loss = self.criterion(outputs, labels)
 
                 # compute training accuracy
-                running_acc += torch.sum(torch.all(outputs == labels, dim=1)) / labels.shape[0]
+                running_acc += self.__accuracy(outputs, labels)
 
                 # perform backpropagation
                 loss.backward()  # compute gradients
@@ -89,7 +93,7 @@ class Trainer:
             self.train_losses.append((epoch, avg_loss))
 
             if epoch % self.check_val_every_n_epoch == 0:
-                print("Validation...")
+                self.logger.info("Validation...")
                 self.model.eval()  # set model to evaluation
                 with torch.no_grad():
                     running_val_acc = 0
@@ -99,8 +103,9 @@ class Trainer:
                         outputs = self.model(inputs)
                         loss = self.criterion(outputs, labels)
 
+                        running_vloss += loss.item()
                         # compute validtion accuracy
-                        running_val_acc += torch.sum(torch.all(outputs == labels, dim=1)) / labels.shape[0]
+                        running_val_acc += self.__accuracy(outputs, labels)
 
                 val_accuracy = running_val_acc / len(val_dataloader)
                 self.val_accuracies.append((epoch, val_accuracy.cpu()))
@@ -108,20 +113,56 @@ class Trainer:
                 avg_vloss = running_vloss / len(val_dataloader)
                 self.val_losses.append((epoch, avg_vloss))
 
-                print(
+                self.logger.info(
                     f"[EPOCH {epoch}] LOSS : train={avg_loss} val={avg_vloss} | ACCURACY : train={train_accuracy} val={val_accuracy}"
                 )
 
     def test(self, test_dataloader: DataLoader) -> None:
-        correct = 0
-        total = 0
-        with torch.no_grad():
-            for data in test_dataloader:
-                images, labels = data
-                images, labels = images.to(self.device), labels.to(self.device)
-                outputs = self.model(images)
-                _, predicted = torch.max(outputs.data, 1)
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
+        """Test the ResNet-18 Model"""
 
-        print(f"Accuracy of the network on the 10000 test images: {100 * correct / total} %")
+        correct = 0
+        with torch.no_grad():
+            for inputs, labels in test_dataloader:
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
+                outputs = self.model(inputs)
+                correct += self.__accuracy(outputs, labels)
+
+        self.logger.info(f"Test accuracy: {(correct / len(test_dataloader)) * 100} %")
+
+    def plot_metrics(self) -> None:
+        """Create plots for model metrics"""
+
+        os.makedirs("plots", exist_ok=True)  # create plots dir
+
+        t_iters, t_loss = list(zip(*self.train_losses))
+        _, v_loss = list(zip(*self.val_losses))
+        _, acc = list(zip(*self.train_accuracies))
+        _, v_acc = list(zip(*self.val_accuracies))
+
+        fig, ax = plt.subplots(1, 2, figsize=(12, 5))
+        fig.suptitle(f"Model: [{self.model_name}]")
+
+        ax[0].set_title(f"Loss Curve (batch_size={self.batch_size}, lr={self.learning_rate})")
+        ax[0].plot(t_iters, t_loss)
+        ax[0].plot(t_iters, v_loss)
+        ax[0].set_xlabel("Epochs")
+        ax[0].set_ylabel("Loss")
+        ax[0].legend(["Train", "Validation"])
+        ax[0].set_xticks(t_iters)
+
+        ax[1].set_title(f"Accuracy Curve (batch_size={self.batch_size}, lr={self.learning_rate})")
+        ax[1].plot(t_iters, acc)
+        ax[1].plot(t_iters, v_acc)
+        ax[1].set_xlabel("Epochs")
+        ax[1].set_ylabel("Accuracy")
+        ax[1].legend(["Train", "Validation"])
+        ax[1].set_xticks(t_iters)
+
+        fig.savefig(f"plots/{self.model_name}_metrics.png")
+        plt.show()
+
+    def __accuracy(self, outputs: torch.Tensor, labels: torch.Tensor) -> float:
+        """Compute accuracy given outputs as logits"""
+
+        preds = torch.argmax(outputs, dim=1)
+        return torch.sum(preds == labels) / len(preds)

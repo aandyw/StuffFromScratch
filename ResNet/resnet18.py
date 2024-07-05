@@ -3,7 +3,6 @@ Building an 18-layer residual network (ResNet-18) from scratch.
 From the paper "Deep Residual Learning for Image Recognition" (https://arxiv.org/abs/1512.03385)
 """
 
-import numpy as np
 import torchvision
 import torch
 import torch.nn as nn
@@ -12,7 +11,7 @@ import torch.nn as nn
 class BasicBlock(nn.Module):
     """The Residual Block"""
 
-    def __init__(self, in_channels: int, out_channels: int, stride: int = 1, downsample: bool = False):
+    def __init__(self, in_channels: int, out_channels: int, stride: int = 1, downsample: bool = False) -> None:
         """
         Create the Residual Block
 
@@ -44,16 +43,16 @@ class BasicBlock(nn.Module):
                 nn.BatchNorm2d(out_channels),
             )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         identity = x.clone()
         x = self.relu(self.bn1(self.conv1(x)))
-        x = self.relu(self.bn2(self.conv2(x)))
+        x = self.bn2(self.conv2(x))
 
         if self.downsample:  # if layer not None
             identity = self.downsample(identity)
 
         x += identity
-        o = torch.relu(x)
+        o = self.relu(x)
 
         return o
 
@@ -61,7 +60,13 @@ class BasicBlock(nn.Module):
 class ResNet18(nn.Module):
     """The ResNet-18 Model"""
 
-    def __init__(self, n_classes: int = 10):
+    def __init__(self, n_classes: int = 10) -> None:
+        """
+        Create the ResNet-18 Model
+
+        Args:
+            n_classes (int, optional): The number of output classes we predict for. Defaults to 10.
+        """
         super().__init__()
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=(3, 3), bias=False)
         self.bn1 = nn.BatchNorm2d(64)
@@ -84,29 +89,31 @@ class ResNet18(nn.Module):
             BasicBlock(256, 512, stride=2, downsample=True),
             BasicBlock(512, 512),
         )
-        self.avgpool = nn.AdaptiveAvgPool2d(output_size=1)
+        self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
 
         # our fully connected layer will be different to accomodate for CIFAR-10
         self.fc = nn.Linear(in_features=512, out_features=n_classes)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.maxpool(self.relu(self.bn1(self.conv1(x))))
 
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
+        x = self.avgpool(x)  # [bs, 512, 1, 1]
 
-        x = self.avgpool(x)
-        x = self.fc(x)
-        return x
+        x = torch.squeeze(x)  # reshape to [bs, 512]
+        o = self.fc(x)
+
+        return o
 
     @classmethod
-    def from_pretrained(cls, model_type):
+    def from_pretrained(cls, model_type: str) -> nn.Module:
         """
         Load pretrained PyTorch ResNet-18 weights into our ResNet-18 implementation
 
-        Inspired by Andej Karpathy from 'Let's reproduce GPT-2 (124M)'
+        Inspired by Andrej Karpathy from 'Let's reproduce GPT-2 (124M)'
         (https://www.youtube.com/watch?v=l8pRSuU81PU)
         """
 
@@ -119,7 +126,7 @@ class ResNet18(nn.Module):
         r18_keys = r18.keys()
 
         # pretrained pytorch resnet18 model
-        p_model = torchvision.models.resnet18(pretrained=True)
+        p_model = torchvision.models.resnet18(weights=torchvision.models.ResNet18_Weights.IMAGENET1K_V1)
         p_r18 = p_model.state_dict()
         p_r18_keys = p_r18.keys()
 
