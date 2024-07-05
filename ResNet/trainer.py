@@ -14,9 +14,9 @@ class Trainer:
         self,
         model: nn.Module,
         model_name: str = "resnet18",
-        batch_size: int = 128,
-        learning_rate: float = 1e-3,
-        num_epochs: int = 10,
+        batch_size: int = 256,
+        learning_rate: float = 0.01,
+        num_epochs: int = 20,
         check_val_every_n_epoch: int = 1,
         device: str = "cpu",
     ) -> None:
@@ -35,7 +35,10 @@ class Trainer:
 
         # set loss function and optimizer
         self.criterion = nn.CrossEntropyLoss()
-        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
+
+        # SGD used by original paper "Deep Residual Learning for Image Recognition"
+        self.optimizer = optim.SGD(self.model.parameters(), lr=self.learning_rate, momentum=0.9, weight_decay=1e-4)
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=30, gamma=0.1)
 
         # model metrics
         self.train_losses = []
@@ -86,6 +89,8 @@ class Trainer:
                     pbar.set_postfix({"loss": round(batch_loss, 5)})
                     batch_loss = 0.0
 
+            self.scheduler.step()
+
             train_accuracy = running_acc / len(train_dataloader)
             self.train_accuracies.append((epoch, train_accuracy.cpu()))
 
@@ -93,7 +98,6 @@ class Trainer:
             self.train_losses.append((epoch, avg_loss))
 
             if epoch % self.check_val_every_n_epoch == 0:
-                self.logger.info("Validation...")
                 self.model.eval()  # set model to evaluation
                 with torch.no_grad():
                     running_val_acc = 0
@@ -114,7 +118,7 @@ class Trainer:
                 self.val_losses.append((epoch, avg_vloss))
 
                 self.logger.info(
-                    f"[EPOCH {epoch}] LOSS : train={avg_loss} val={avg_vloss} | ACCURACY : train={train_accuracy} val={val_accuracy}"
+                    f"[EPOCH {epoch + 1}] LOSS : train={avg_loss} val={avg_vloss} | ACCURACY : train={train_accuracy} val={val_accuracy}"
                 )
 
     def test(self, test_dataloader: DataLoader) -> None:
