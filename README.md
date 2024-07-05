@@ -8,7 +8,7 @@
 - [ ] Variational Autoencoder (VAE)
 - [ ] Generative Adversarial Network (GAN)
 - [ ] Graph Neural Network
-- [ ] ResNet18 + Residual Layars **<u>[WIP]</u>**
+- [x] ResNet18 + Residual Layars
   
 
 ## Sequence Models

@@ -16,7 +16,7 @@ class Trainer:
         model_name: str = "resnet18",
         batch_size: int = 256,
         learning_rate: float = 0.01,
-        num_epochs: int = 20,
+        num_epochs: int = 30,
         check_val_every_n_epoch: int = 1,
         device: str = "cpu",
     ) -> None:
@@ -37,8 +37,8 @@ class Trainer:
         self.criterion = nn.CrossEntropyLoss()
 
         # SGD used by original paper "Deep Residual Learning for Image Recognition"
-        self.optimizer = optim.SGD(self.model.parameters(), lr=self.learning_rate, momentum=0.9, weight_decay=1e-4)
-        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=30, gamma=0.1)
+        self.optimizer = optim.SGD(self.model.parameters(), lr=self.learning_rate, momentum=0.9)
+        self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=7, gamma=0.1)
 
         # model metrics
         self.train_losses = []
