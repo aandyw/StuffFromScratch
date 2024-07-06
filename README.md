@@ -13,7 +13,6 @@
 | --- | --- | --- | 
 | ResNet-18 | CIFAR-10 | [![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white)](ResNet/train_resnet18.ipynb) |
 
----
 
 # Future
 - [x] Logistic Regression
