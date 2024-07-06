@@ -11,7 +11,7 @@
 ## Deep Learning
 |Title | Dataset | Notebooks |
 | --- | --- | --- | 
-| ResNet-18 | CIFAR-10 | [![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)](ResNet/train_resnet18.ipynb) |
+| ResNet-18 | CIFAR-10 | [![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white)](ResNet/train_resnet18.ipynb) |
 
 ---
 
