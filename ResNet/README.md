@@ -3,7 +3,6 @@ A toy project to learn, implement, and train our own ResNet-18 on CIFAR-10.
 
 
 # Results
----
 
 ### Existing PyTorch ResNet-18 Model (Baseline)
 ![baseline pytorch resnet18](plots/baseline_pytorch_resnet18_metrics.png)
