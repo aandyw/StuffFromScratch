@@ -17,7 +17,7 @@
 
 # TBD [To Be Done]
 - [x] Logistic Regression
-- [ ] Linear Regression [WIP]
+- [x] Linear Regression
 - [ ] Autoencoder
 - [ ] Variational Autoencoder (VAE)
 - [ ] Generative Adversarial Network (GAN)
