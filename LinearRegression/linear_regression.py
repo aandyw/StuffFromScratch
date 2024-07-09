@@ -37,7 +37,7 @@ class LinearRegression:
             self.b -= self.learning_rate * grad_b
             self.losses.append(loss)
 
-            if (epoch + 1) % 100 == 0:
+            if (epoch + 1) % 1000 == 0:
                 print(f"[Epoch {epoch + 1}/{self.epochs}] Loss: {round(loss, 5)}")
 
     def predict(self, X):
