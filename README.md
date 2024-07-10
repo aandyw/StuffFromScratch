@@ -5,8 +5,8 @@
 ## Traditional
 |Implementation | Dataset | Notebooks |
 | --- | --- | --- | 
-| Logistic Regression | Breast Cancer Wisconsin Dataset | [![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)](LogisticRegression/eval.ipynb) |
 | Simple Linear Regression | Dummy + Diabetes Dataset (regression) | [![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)](LinearRegression/eval.ipynb) |
+| Logistic Regression | Breast Cancer Wisconsin Dataset | [![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)](LogisticRegression/eval.ipynb) |
 
 ## Deep Learning
 |Implementation | Dataset | Notebooks |
@@ -16,8 +16,8 @@
 ---
 
 # TBD [To Be Done]
-- [x] Logistic Regression
 - [x] Linear Regression
+- [x] Logistic Regression
 - [ ] Autoencoder
 - [ ] Variational Autoencoder (VAE)
 - [ ] Generative Adversarial Network (GAN)
