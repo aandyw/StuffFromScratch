@@ -1,1 +1,1 @@
-Andrej Karpathy the 🐐
+Micrograd Lecture with Andrej Karpathy the 🐐
