@@ -125,6 +125,7 @@ class Trainer:
         """Test the ResNet-18 Model"""
 
         correct = 0
+        self.model.eval()
         with torch.no_grad():
             for inputs, labels in test_dataloader:
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
