@@ -22,7 +22,7 @@
 
 ---
 
-# TBD [To Be Done]
+# Roadmap
 - [x] Linear Regression
 - [x] Logistic Regression
 - [ ] Autoencoder
