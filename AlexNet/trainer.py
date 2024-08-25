@@ -107,9 +107,12 @@ class Trainer:
             self.scheduler.step()
 
             train_accuracy = running_acc / len(train_dataloader)
-            self.train_accuracies.append((epoch, train_accuracy.cpu()))
-
             avg_loss = running_loss / len(train_dataloader)
+
+            if avg_loss <= self.train_losses[-1]:
+                self.save(epoch, avg_loss)
+
+            self.train_accuracies.append((epoch, train_accuracy.cpu()))
             self.train_losses.append((epoch, avg_loss))
 
             if epoch % self.check_val_every_n_epoch == 0:
