@@ -19,6 +19,8 @@ class Trainer:
         model_name: str = "alexnet",
         batch_size: int = 256,
         learning_rate: float = 0.01,
+        weight_decay: float = 0.0005,
+        momentum: float = 0.9,
         num_epochs: int = 30,
         check_val_every_n_epoch: int = 1,
         device: str = "cpu",
@@ -32,6 +34,7 @@ class Trainer:
         # training configurations
         self.batch_size = batch_size  # does nothing; mainly for viz
         self.learning_rate = learning_rate
+        self.momentum = momentum
         self.num_epochs = num_epochs
         self.check_val_every_n_epoch = check_val_every_n_epoch
         self.device = device
@@ -40,8 +43,12 @@ class Trainer:
         # set loss function and optimizer
         self.criterion = nn.CrossEntropyLoss()
 
-        # SGD used by original paper "Deep Residual Learning for Image Recognition"
-        self.optimizer = optim.SGD(self.model.parameters(), lr=self.learning_rate, momentum=0.9)
+        # SGD used by original alexnet paper
+        self.optimizer = optim.SGD(
+            self.model.parameters(), lr=self.learning_rate, momentum=momentum, weight_decay=weight_decay
+        )
+
+        # Decays lr of each parameter group by 0.1 every step_size epochs
         self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=7, gamma=0.1)
 
         # model metrics
@@ -133,6 +140,7 @@ class Trainer:
         """Test the AlexNet Model"""
 
         correct = 0
+        top_5 = 0
 
         self.model.eval()
         with torch.no_grad():
@@ -140,8 +148,11 @@ class Trainer:
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
                 outputs = self.model(inputs)
                 correct += self.__accuracy(outputs, labels)
+                top_5 += self._top_k_accuracy(outputs, labels, k=5)
 
-        self.logger.info(f"Test accuracy: {(correct / len(test_dataloader)) * 100} %")
+        self.logger.info(
+            f"Test accuracy: {(correct / len(test_dataloader)) * 100} % | Top-5 accuracy: {(top_5 / len(test_dataloader)) * 100}"
+        )
 
     def plot_metrics(self) -> None:
         """Create plots for model metrics"""
@@ -156,7 +167,7 @@ class Trainer:
         fig, ax = plt.subplots(1, 2, figsize=(12, 5))
         fig.suptitle(f"Model: [{self.model_name}]")
 
-        ax[0].set_title(f"Loss Curve (batch_size={self.batch_size}, lr={self.learning_rate})")
+        ax[0].set_title(f"Loss Curve (batch_size={self.batch_size}, lr={self.learning_rate}), momentum={self.momentum}")
         ax[0].plot(t_iters, t_loss)
         ax[0].plot(t_iters, v_loss)
         ax[0].set_xlabel("Epochs")
@@ -164,7 +175,9 @@ class Trainer:
         ax[0].legend(["Train", "Validation"])
         ax[0].set_xticks(t_iters)
 
-        ax[1].set_title(f"Accuracy Curve (batch_size={self.batch_size}, lr={self.learning_rate})")
+        ax[1].set_title(
+            f"Accuracy Curve (batch_size={self.batch_size}, lr={self.learning_rate}), momentum={self.momentum}"
+        )
         ax[1].plot(t_iters, acc)
         ax[1].plot(t_iters, v_acc)
         ax[1].set_xlabel("Epochs")
@@ -175,6 +188,16 @@ class Trainer:
         fig.savefig(f"plots/{self.model_name}_metrics.png")
         plt.show()
 
+    def _top_k_accuracy(self, outputs: torch.Tensor, labels: torch.Tensor, k: int) -> float:
+        """Top-K accuracy. Top-1 is the equivalent to regular accuracy."""
+
+        ground_truths = torch.argmax(labels, dim=1)
+        values, indices = torch.topk(outputs, k)
+        topk_correct = indices.eq(ground_truths.view(-1, 1).expand_as(indices))
+        accuracy = topk_correct.sum().item() / labels.size(0)
+
+        return accuracy
+
     def __accuracy(self, outputs: torch.Tensor, labels: torch.Tensor) -> float:
         """Compute accuracy given outputs as logits"""
 
@@ -182,6 +205,8 @@ class Trainer:
         return torch.sum(preds == labels) / len(preds)
 
     def save(self, epoch: int, loss: float) -> None:
+        """Save model"""
+
         time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         checkpoint_path = os.path.join(self.checkpoints_dir, f"{self.model_name}_e{epoch}_{time}.pt")
         state = {
@@ -193,6 +218,8 @@ class Trainer:
         torch.save(state, checkpoint_path)
 
     def load(self, checkpoint_name: str) -> None:
+        """Load model"""
+
         checkpoint_path = os.path.join(self.checkpoints_dir, checkpoint_name)
         checkpoint = torch.load(checkpoint_path)
         self.model.load_state_dict(checkpoint["model"])
