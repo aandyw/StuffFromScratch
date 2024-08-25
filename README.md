@@ -11,7 +11,14 @@
 ## Deep Learning
 |Implementation | Dataset | Notebooks |
 | --- | --- | --- | 
+| AlexNet | Tiny ImageNet | [![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white)](AlexNet/train_alexnet.ipynb) |
 | ResNet-18 | CIFAR-10 | [![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white)](ResNet/train_resnet18.ipynb) |
+
+## Computer Vision
+|Implementation | Dataset | Notebooks |
+| --- | --- | --- | 
+| U-Net Architecture | SOME RANDOM SEGMENTATION DATASET | [![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white)](...) |
+
 
 ---
 
@@ -24,11 +31,16 @@
 - [ ] Graph Neural Network
 - [x] ResNet18 + Residual Layars
 - [ ] U-Net Architecture [WIP]
+- [ ] AlexNet [WIP]
 
 ### Sequence Models
 - [ ] Recurrent Neural Network (RNN)
 - [ ] Long Short-Term Memory (LSTM)
 - [ ] Gated Recurrent Unit (GRU)
+
+
+### Misc
+- [ ] Ensembling + XGBoost
 
 
 # Acknowledgements
