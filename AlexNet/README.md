@@ -8,6 +8,14 @@ A toy project to learn, implement, and train the famous AlexNet Architecture fro
 
 # Results
 
+The final results after training for ~$30$ epochs are as follows:  
+`Test Top-1 accuracy: 31.754350662231445 % | Top-5 accuracy: 58.7618670886076`
+
+![alexnet results](plots/alexnet_metrics.png)
+
+Considering that the [original AlexNet paper]((https://proceedings.neurips.cc/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf)) reports top-1 and top-5 error rate scores of 67.4% and 40.9%
+(Top-1 and top-5 accuracies are inversely equivalent being 32.6% and 59.1% respectively) on ImageNet, we can say that the implementation is sufficiently accurate for the Tiny ImageNet dataset.
+
 
 # Acknowledgements
 - [dansuh17/alexnet-pytorch](https://github.com/dansuh17/alexnet-pytorch)
