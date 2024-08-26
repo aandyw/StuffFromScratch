@@ -55,8 +55,10 @@ class Trainer:
         # model metrics
         self.train_losses = []
         self.train_accuracies = []
+        self.train_top_k_accuracies = []
         self.val_losses = []
         self.val_accuracies = []
+        self.val_top_k_accuracies = []
 
         # logging info
         logging.basicConfig(stream=sys.stdout, level=logging.INFO, format="%(levelname)s | %(message)s")
@@ -77,6 +79,7 @@ class Trainer:
             running_vloss = 0.0
             batch_loss = 0.0
             running_acc = 0.0
+            running_top_k_acc = 0.0
 
             pbar = tqdm(enumerate(train_dataloader), total=len(train_dataloader))
 
@@ -92,6 +95,7 @@ class Trainer:
 
                 # compute training accuracy
                 running_acc += self.__accuracy(outputs, labels)
+                running_top_k_acc += self._top_k_accuracy(outputs, labels, k=5)
 
                 # perform backpropagation
                 loss.backward()  # compute gradients
@@ -108,6 +112,7 @@ class Trainer:
             self.scheduler.step()
 
             train_accuracy = running_acc / len(train_dataloader)
+            train_top_k_accuracy = running_top_k_acc / len(train_dataloader)
             avg_loss = running_loss / len(train_dataloader)
 
             prev_loss = self.train_losses[-1][0] if self.train_losses else float("inf")
@@ -115,12 +120,14 @@ class Trainer:
                 self.save(epoch + 1, avg_loss)
 
             self.train_accuracies.append((epoch, train_accuracy.cpu()))
+            self.train_top_k_accuracies.append((epoch, train_top_k_accuracy))
             self.train_losses.append((epoch, avg_loss))
 
             if epoch % self.check_val_every_n_epoch == 0:
                 self.model.eval()  # set model to evaluation
                 with torch.no_grad():
                     running_val_acc = 0
+                    running_val_top_k_acc = 0
                     for inputs, labels in val_dataloader:
                         inputs, labels = inputs.to(self.device), labels.to(self.device)
 
@@ -128,8 +135,13 @@ class Trainer:
                         loss = self.criterion(outputs, labels)
 
                         running_vloss += loss.item()
+
                         # compute validtion accuracy
                         running_val_acc += self.__accuracy(outputs, labels)
+                        running_val_top_k_acc += self._top_k_accuracy(outputs, labels, k=5)
+
+                val_top_k_accuracy = running_val_top_k_acc / len(val_dataloader)
+                self.val_top_k_accuracies.append((epoch, val_top_k_accuracy))
 
                 val_accuracy = running_val_acc / len(val_dataloader)
                 self.val_accuracies.append((epoch, val_accuracy.cpu()))
@@ -138,7 +150,7 @@ class Trainer:
                 self.val_losses.append((epoch, avg_vloss))
 
                 self.logger.info(
-                    f"[EPOCH {epoch + 1}] LOSS : train={avg_loss} val={avg_vloss} | ACCURACY : train={train_accuracy} val={val_accuracy}"
+                    f"[EPOCH {epoch + 1}] LOSS : train={avg_loss} val={avg_vloss} | ACCURACY (Top-1) : train={train_accuracy} val={val_accuracy} | TOP-5 : train={train_top_k_accuracy} val={val_top_k_accuracy}"
                 )
 
     def test(self, test_dataloader: DataLoader) -> None:
