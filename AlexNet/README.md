@@ -2,10 +2,6 @@
 A toy project to learn, implement, and train the famous AlexNet Architecture from scratch from the 2012 paper
 "[ImageNet Classification with Deep Convolutional Neural Networks](https://proceedings.neurips.cc/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf)" simply because we can.
 
-# Project Goals
-1. Implement AlexNet from scratch
-2. Parallelize training across multiple GPUs
-
 # Results
 
 
