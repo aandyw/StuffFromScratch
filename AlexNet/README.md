@@ -10,3 +10,4 @@ A toy project to learn, implement, and train the famous AlexNet Architecture fro
 - [ImageNet Classification with Deep Convolutional Neural Networks](https://proceedings.neurips.cc/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf)
 - [Writing AlexNet from Scratch in PyTorch](https://blog.paperspace.com/alexnet-pytorch/#data-loading)
 - https://pytorch.org/hub/pytorch_vision_alexnet/
+- [Difference between AlexNet, VGGNet, ResNet, and Inception](https://towardsdatascience.com/the-w3h-of-alexnet-vggnet-resnet-and-inception-7baaaecccc96)
