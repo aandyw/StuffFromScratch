@@ -31,7 +31,7 @@
 - [ ] Graph Neural Network
 - [x] ResNet18 + Residual Layars
 - [ ] U-Net Architecture [WIP]
-- [ ] AlexNet [WIP]
+- [x] AlexNet
 
 ### Sequence Models
 - [ ] Recurrent Neural Network (RNN)
